@@ -1,0 +1,135 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{cite}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{\bf Hospital Emergency Department Simulation with Reinforcement Learning for Resource Optimization}
+\author{
+    Siddharth Jaiswal\footnote{Department of Industrial Engineering, Indian Institute of Technology Kharagpur, Email: siddharthjaiswal4040@gmail.com; Contact: 62676345056} \\
+    }
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This paper presents a discrete event simulation (DES) model of a hospital emergency department (ED) developed in AnyLogic. The model simulates patient arrivals, triage, treatment, and discharge processes. Furthermore, a reinforcement learning (RL) agent is integrated to dynamically optimize resource allocation and patient routing decisions. Simulation experiments demonstrate that the RL-enhanced model reduces patient waiting times and improves overall resource utilization. The methodology, implementation details, and experimental results are discussed in depth.
+\end{abstract}
+
+\noindent \textbf{Index Terms}: Hospital Emergency Department, Discrete Event Simulation, Reinforcement Learning, Resource Optimization, AnyLogic.
+
+\section{Introduction}
+Efficient management of hospital emergency departments is essential due to increasing patient loads and limited healthcare resources. Discrete event simulation (DES) has emerged as an effective tool to model complex ED processes, enabling detailed analysis of patient flow and resource utilization. In parallel, reinforcement learning (RL) offers adaptive decision-making capabilities that can optimize operational performance under uncertainty. This paper combines DES and RL to develop a simulation framework for an ED, aiming to minimize patient waiting times and improve resource allocation. The remainder of the paper is organized as follows: Section~\ref{sec:methodology} outlines the methodology, Section~\ref{sec:implementation} discusses the simulation model and RL integration, Section~\ref{sec:results} presents experimental results, and Section~\ref{sec:conclusion} concludes the paper.
+
+\section{Methodology} \label{sec:methodology}
+The proposed approach involves two primary components: a discrete event simulation of the ED process and an RL agent for adaptive resource optimization.
+
+\subsection{Simulation Model Overview}
+The ED simulation is developed in AnyLogic using the Process Modeling Library. The key elements of the simulation include:
+\begin{itemize}[noitemsep]
+    \item \textbf{Patient Arrival:} Patients enter the ED according to a Poisson process with interarrival times modeled by an exponential distribution.
+    \item \textbf{Triage and Severity Assessment:} Each patient is assigned a severity score during the triage phase. A custom attribute, \texttt{severity}, is set for each patient agent.
+    \item \textbf{Routing:} A decision block (e.g., \texttt{SelectOutput}) directs patients based on severity. Patients with a severity score above a defined threshold (e.g., $\geq 7$) are routed to immediate treatment, while others are sent to a waiting area.
+    \item \textbf{Treatment and Resource Allocation:} Treatment processes are modeled using \texttt{Seize}, \texttt{Delay}, and \texttt{Release} blocks. Resource pools (e.g., doctors, treatment teams) are defined with specific capacities.
+    \item \textbf{Outcome Evaluation:} After treatment, patients are evaluated for recovery. Those who recover are discharged, while others may receive additional treatment.
+\end{itemize}
+
+\subsection{Reinforcement Learning Integration}
+An RL agent is incorporated to dynamically optimize key decision parameters such as resource allocation and patient routing. The RL framework is implemented using custom Java code within AnyLogic.
+
+\subsubsection{State and Action Space}
+The state observed by the RL agent includes:
+\begin{itemize}[noitemsep]
+    \item The number of patients in the waiting area.
+    \item Average patient severity.
+    \item Current resource utilization (e.g., percentage of busy doctors).
+\end{itemize}
+The action space includes decisions such as:
+\begin{itemize}[noitemsep]
+    \item Adjusting the number of active treatment teams.
+    \item Modifying routing thresholds for patient severity.
+\end{itemize}
+
+\subsubsection{Reward Function and Learning}
+The RL agent uses a Q-learning algorithm with an $\epsilon$-greedy policy. The reward function is designed to penalize long waiting times and inefficient resource utilization. The Q-value update is performed using:
+\begin{equation}
+    Q(s,a) \leftarrow Q(s,a) + \alpha \left[ r + \gamma \max_{a'} Q(s',a') - Q(s,a) \right],
+\end{equation}
+where $\alpha$ is the learning rate, $\gamma$ is the discount factor, $r$ is the immediate reward, $s$ is the current state, and $s'$ is the next state.
+
+\section{Implementation and Experimental Setup} \label{sec:implementation}
+\subsection{AnyLogic Simulation Model}
+The simulation model is implemented in AnyLogic Personal Edition. The model structure includes:
+\begin{enumerate}[noitemsep]
+    \item \textbf{Patient Generation:} The \texttt{Source} block generates patients using an exponential interarrival time (e.g., \texttt{exponential(10)} for an average interarrival time of 10 minutes).
+    \item \textbf{Triage and Routing:} Patients are assessed and routed using a \texttt{SelectOutput} block. The routing condition is set as:
+    \begin{verbatim}
+    ((Patient)entity).severity >= 7
+    \end{verbatim}
+    \item \textbf{Treatment Process:} The \texttt{Seize}, \texttt{Delay}, and \texttt{Release} blocks simulate the treatment phase with resources defined in \texttt{Resource Pool} blocks.
+    \item \textbf{Outcome Evaluation:} A post-treatment decision block determines whether a patient is discharged or sent for further treatment.
+\end{enumerate}
+
+\subsection{Reinforcement Learning Module}
+The RL agent interacts with the simulation at key decision points. At each decision epoch, the following steps occur:
+\begin{enumerate}[noitemsep]
+    \item The current state is extracted from simulation metrics.
+    \item The RL agent selects an action based on the current state using an $\epsilon$-greedy strategy.
+    \item The chosen action is applied (e.g., adjusting the number of available doctors).
+    \item A reward is computed based on the improvement in patient waiting time and resource utilization.
+    \item The agent updates its Q-values based on the observed transition.
+\end{enumerate}
+
+\subsection{Experimental Setup}
+The simulation is run over multiple episodes to allow the RL agent to learn an optimal policy. Key parameters include:
+\begin{itemize}[noitemsep]
+    \item \textbf{Simulation Time Units:} Minutes.
+    \item \textbf{Patient Arrival Rate:} Exponential distribution with a mean of 10 minutes.
+    \item \textbf{Severity Threshold:} A severity value of 7 is used for routing decisions.
+    \item \textbf{Resource Capacities:} Configured based on realistic hospital ED scenarios.
+\end{itemize}
+Performance metrics such as average patient waiting time, resource utilization, and throughput are collected for analysis.
+
+\section{Results and Discussion}
+Simulation experiments reveal that the integration of reinforcement learning significantly improves operational efficiency. Key observations include:
+\begin{itemize}[noitemsep]
+    \item \textbf{Reduced Waiting Times:} The RL agent learns to adjust resource allocation dynamically, leading to a reduction in average patient waiting times.
+    \item \textbf{Improved Resource Utilization:} Adaptive policies help maintain optimal utilization of doctors and treatment teams, reducing idle time.
+    \item \textbf{Robustness to Variability:} The RL-enhanced model adapts to fluctuating patient arrival rates and varying severity levels, demonstrating improved robustness over a fixed-policy model.
+\end{itemize}
+Figure~\ref{fig:results} illustrates a sample output from the simulation, comparing waiting times before and after RL optimization.
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.7\textwidth}{10cm}{%
+        \includegraphics{Hospital_Simulation.png}
+    }
+    \caption{Simulation Flowchart and Sample Results from the ED Simulation Model}
+    \label{fig:results}
+\end{figure}
+
+
+
+\section{Conclusion}
+This paper presented a hospital emergency department simulation model enhanced with reinforcement learning for adaptive resource optimization. The model, developed in AnyLogic, successfully simulates patient flow, resource allocation, and treatment processes. The RL agent, implemented via Q-learning, dynamically adjusts decision parameters, resulting in reduced waiting times and improved resource utilization. Future work will explore more advanced RL algorithms and a broader range of state variables to further enhance the model's performance.
+
+\section*{Acknowledgments}
+The authors would like to thank Indian Institute Of Technology Kharagpur for supporting this research.
+
+\section*{References}
+\begin{enumerate}[noitemsep]
+    \item Law, A. M., \& Kelton, W. D. (2000). \textit{Simulation Modeling and Analysis} (3rd ed.). McGraw-Hill.
+    \item Sutton, R. S., \& Barto, A. G. (2018). \textit{Reinforcement Learning: An Introduction} (2nd ed.). MIT Press.
+    \item AnyLogic. (n.d.). \textit{AnyLogic Help Documentation}. Retrieved from \url{https://www.anylogic.com/resources/tutorials/}
+    \item Shortreed, S. M., Laber, E., Lizotte, D. J., Stroup, T. S., Pineau, J., \& Murphy, S. A. (2011). \textit{Informing Sequential Clinical Decision-Making through Reinforcement Learning: An Empirical Study}. Journal of Machine Learning Research, 12, 2533-2553.
+\end{enumerate}
+
+\end{document}
